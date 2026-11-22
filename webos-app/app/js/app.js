@@ -12,8 +12,8 @@
  *   {standby: true}                   start (or stay) running in the background
  *   {} / {settings: true}             open the setup screen (app list launch)
  *
- * When the PIP closes, the app quits and webOS returns to the app that was
- * playing. Staying resident makes the TV open its home app instead.
+ * The box is an overlay. Closing it removes that layer only. The app
+ * underneath is not closed and not launched again.
  */
 (function () {
   'use strict';
@@ -208,28 +208,17 @@
         returnToSettings = false;
         Settings.resume();
       } else {
-        exitToPreviousApp();
+        closeOverlay();
       }
     }, 300);
   }
 
-  /** Quit and hand the screen back to the app that was playing. */
-  function exitToPreviousApp() {
+  /** Remove the overlay. Do not launch or resume another app. */
+  function closeOverlay() {
     if (ha) ha.close();
     ha = null;
-    if (webos) {
-      try {
-        if (webos.keepAlive) webos.keepAlive(false);
-        if (webos.setWindowProperty) {
-          webos.setWindowProperty('_WEBOS_LAUNCH_PREV_APP_AFTER_CLOSING', 'true');
-        }
-      } catch (e) { /* older firmware has no such property */ }
-      if (typeof webos.close === 'function') {
-        try { webos.close('EXIT_TO_LASTAPP'); return; } catch (e) { /* close() takes no argument */ }
-        try { webos.close(); return; } catch (e2) { /* fall through */ }
-      }
-    }
-    window.close();
+    if (webos && typeof webos.close === 'function') webos.close();
+    else window.close();
   }
 
   function showError(msg) {

@@ -33,7 +33,6 @@
     this.video.pause();
     this.video.removeAttribute('src');
     this.video.srcObject = null;
-    this.video.load();
     this.img.removeAttribute('src');
     this.video.classList.add('hidden');
     this.img.classList.add('hidden');

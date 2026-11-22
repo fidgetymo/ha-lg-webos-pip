@@ -1,6 +1,6 @@
 {
   "id": "io.github.idaddycz.lgwebospip",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "vendor": "iDaddyCz",
   "type": "web",
   "main": "index.html",
@@ -9,7 +9,7 @@
   "largeIcon": "largeIcon.png",
   "resolution": "1920x1080",
   "transparent": true,
-  "defaultWindowType": "card",
+  "defaultWindowType": "overlay",
   "handlesRelaunch": true,
   "noSplashOnLaunch": true,
   "spinnerOnLaunch": false,

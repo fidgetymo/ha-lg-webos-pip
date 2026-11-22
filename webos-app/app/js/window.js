@@ -1,13 +1,8 @@
 /*
- * Window modes for a resident PIP app.
- *
- * Launching any app makes webOS stop the app in front: YouTube, for one,
- * unloads its video and leaves a black screen. Relaunching an app that is
- * already running doesn't. So HA PIP is a card app that stays running in the
- * background and draws the PIP in a passive floating window that never takes
- * the remote. The setup screen switches back to a normal, focused window.
- *
- * These window properties are private webOS APIs; they work without root.
+ * The app is an overlay (appinfo defaultWindowType). It is drawn on top of
+ * whatever is playing and is not a card app, so webOS does not switch to the
+ * home screen when the box is removed. These properties only keep the remote
+ * on the app underneath. They do not change the window type.
  */
 (function (global) {
   'use strict';
@@ -19,13 +14,11 @@
     if (!sys) return;
     try {
       if (sys.setWindowProperty) {
-        sys.setWindowProperty('_WEBOS_WINDOW_TYPE', passive ? '_WEBOS_WINDOW_TYPE_FLOATING' : '_WEBOS_WINDOW_TYPE_CARD');
         sys.setWindowProperty('needFocus', passive ? 'false' : 'true');
       }
       if (sys.setInputRegion) {
         sys.setInputRegion([{ x: 0, y: 0, width: passive ? 0 : 1920, height: passive ? 0 : 1080 }]);
       }
-      if (sys.keepAlive) sys.keepAlive(true);
     } catch (e) {
       // Firmware without these properties: the PIP still works, it just takes the remote.
     }
