@@ -1,6 +1,6 @@
 /*
  * HA PIP: shows one Home Assistant camera (or any video URL) in a small box
- * over whatever the TV is playing, then closes itself.
+ * over whatever the TV is playing, then hides that box and stays loaded.
  *
  * Launch params (sent by the Home Assistant integration via
  * webostv.command -> system.launcher/launch):
@@ -12,8 +12,8 @@
  *   {standby: true}                   start (or stay) running in the background
  *   {} / {settings: true}             open the setup screen (app list launch)
  *
- * The box is an overlay. Closing it removes that layer only. The app
- * underneath is not closed and not launched again.
+ * The box is an overlay. Hiding it leaves this app loaded. Quitting would
+ * make this TV open Glasshouse Home and stop whatever is playing.
  */
 (function () {
   'use strict';
@@ -44,9 +44,11 @@
     spinner.classList.toggle('hidden', state !== 'loading');
     // Size the box to the feed (e.g. 4:3 doorbells) without CSS aspect-ratio,
     // which is unavailable in the Chromium 87 engine used by webOS 22.
+    // The box stays hidden until this runs, so the resize never paints.
     if (state === 'playing' && info.width && info.height && !pip.classList.contains('fill')) {
       pip.style.height = Math.round(pip.getBoundingClientRect().width * info.height / info.width) + 'px';
     }
+    if (state === 'playing' || state === 'error') pip.classList.remove('pending');
   });
 
   // ---------- launch params ----------
@@ -138,6 +140,7 @@
     clearTimeout(retryTimer);
     hideError();
     pip.classList.remove('hidden', 'closing');
+    pip.classList.add('pending');
     POSITIONS.forEach(function (p) { pip.classList.toggle(p, p === opts.position); });
     // If webOS sized the overlay window itself, fill it. Otherwise give the box
     // explicit dimensions so older webOS engines cannot collapse it to a bar.
@@ -194,6 +197,7 @@
     errorBox.textContent = text;
     errorBox.classList.add('info');
     errorBox.classList.remove('hidden');
+    pip.classList.remove('pending');
   }
 
   function closePip() {
@@ -213,16 +217,17 @@
     }, 300);
   }
 
-  /** Remove the overlay. Do not launch or resume another app. */
+  /** Hide the picture and stay loaded. Do not quit, and do not launch another app. */
   function closeOverlay() {
     if (ha) ha.close();
     ha = null;
-    if (webos && typeof webos.close === 'function') webos.close();
-    else window.close();
+    haKey = '';
+    AppWindow.passive();
   }
 
   function showError(msg) {
     spinner.classList.add('hidden');
+    pip.classList.remove('pending');
     errorBox.classList.remove('info');
     errorBox.textContent = msg;
     errorBox.classList.remove('hidden');

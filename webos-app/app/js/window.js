@@ -1,8 +1,8 @@
 /*
- * The app is an overlay (appinfo defaultWindowType). It is drawn on top of
- * whatever is playing and is not a card app, so webOS does not switch to the
- * home screen when the box is removed. These properties only keep the remote
- * on the app underneath. They do not change the window type.
+ * The app launches as an overlay so this TV does not treat it as a new card.
+ * An overlay window keeps the remote after the picture is hidden, so a passive
+ * window is switched to floating: drawn on top, no remote, and the app stays
+ * loaded. Quitting is what makes this TV open Glasshouse Home.
  */
 (function (global) {
   'use strict';
@@ -14,11 +14,13 @@
     if (!sys) return;
     try {
       if (sys.setWindowProperty) {
+        sys.setWindowProperty('_WEBOS_WINDOW_TYPE', passive ? '_WEBOS_WINDOW_TYPE_FLOATING' : '_WEBOS_WINDOW_TYPE_CARD');
         sys.setWindowProperty('needFocus', passive ? 'false' : 'true');
       }
       if (sys.setInputRegion) {
         sys.setInputRegion([{ x: 0, y: 0, width: passive ? 0 : 1920, height: passive ? 0 : 1080 }]);
       }
+      if (passive && sys.keepAlive) sys.keepAlive(true);
     } catch (e) {
       // Firmware without these properties: the PIP still works, it just takes the remote.
     }

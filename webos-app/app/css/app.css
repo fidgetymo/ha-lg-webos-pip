@@ -30,6 +30,7 @@ html, body {
 .pip.bottom-right { bottom: 48px; right: 48px; }
 .pip.bottom-left  { bottom: 48px; left: 48px; }
 .pip.closing { opacity: 0; }
+.pip.pending { visibility: hidden; }
 
 /* When webOS gives us a window that is already PIP-sized, fill it. */
 .pip.fill { inset: 0; width: auto; height: auto; border-radius: 0; border: 0; }
