@@ -12,8 +12,8 @@
  *   {standby: true}                   start (or stay) running in the background
  *   {} / {settings: true}             open the setup screen (app list launch)
  *
- * The app stays running after the PIP closes (see window.js): launching an
- * app stops the video in the app in front, relaunching a running one doesn't.
+ * When the PIP closes, the app quits and webOS returns to the app that was
+ * playing. Staying resident makes the TV open its home app instead.
  */
 (function () {
   'use strict';
@@ -208,9 +208,28 @@
         returnToSettings = false;
         Settings.resume();
       } else {
-        AppWindow.passive(); // stay running, out of sight
+        exitToPreviousApp();
       }
     }, 300);
+  }
+
+  /** Quit and hand the screen back to the app that was playing. */
+  function exitToPreviousApp() {
+    if (ha) ha.close();
+    ha = null;
+    if (webos) {
+      try {
+        if (webos.keepAlive) webos.keepAlive(false);
+        if (webos.setWindowProperty) {
+          webos.setWindowProperty('_WEBOS_LAUNCH_PREV_APP_AFTER_CLOSING', 'true');
+        }
+      } catch (e) { /* older firmware has no such property */ }
+      if (typeof webos.close === 'function') {
+        try { webos.close('EXIT_TO_LASTAPP'); return; } catch (e) { /* close() takes no argument */ }
+        try { webos.close(); return; } catch (e2) { /* fall through */ }
+      }
+    }
+    window.close();
   }
 
   function showError(msg) {
